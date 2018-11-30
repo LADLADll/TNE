@@ -70,3 +70,4 @@ void loop(){
   lcd.print(currentMillis/1000);
   lcd.print(" seconden");
 }
+klhjlk
