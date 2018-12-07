@@ -2,20 +2,19 @@
 #include <arduino.h>
 #include <rgb_lcd.h>
 #include <Wire.h>
-#define LOG_PERIOD 500                                                //meting refreshen na ...µs (Logging period in milliseconds, recommended value 15000-60000.)
-#define MAX_PERIOD 60000                                              //maximale duur van een meting (µs) (Maximum logging period)
+#define LOG_PERIOD 5000                                                //meting refreshen na ...µs (Logging period in milliseconds, recommended value 15000-60000.)
+#define MAX_PERIOD 60000                                            //maximale duur van een meting (µs) (Maximum logging period) was 60000
 
-//Defineer de variabelen
+//Defineer de variabelen45475é
 rgb_lcd lcd;
-unsigned long counts;                                                 //variabele voor het aantal tellen (unsigned long omdat geen negatieve getallen moeten opgeslagen)
-unsigned long cpm;                                                    //variabele voor het aantal tellen per minuut (unsigned long omdat geen negatieve getallen moeten opgeslagen)
-unsigned int multiplier;                                              //variable for calculation CPM in this sketch (int???) (is deze nodig???)
-unsigned long previousMillis;                                         //variable for time measurement (unsigned long omdat geen negatieve getallen moeten opgeslagen)
-unsigned long startKnop;                                              
-unsigned long currentMillis;
+float counts;                                                 //variabele voor het aantal tellen (unsigned long omdat geen negatieve getallen moeten opgeslagen)
+unsigned int cpm;                                                    //variabele voor het aantal tellen per minuut (unsigned long omdat geen negatieve getallen moeten opgeslagen)                                              //variable for calculation CPM in this sketch (int???) (is deze nodig???)
+unsigned int previousMillis;                                         //variable for time measurement (unsigned long omdat geen negatieve getallen moeten opgeslagen)
+unsigned int currentMillis;
 float aantMinMeten;                                                   //het aantal minuten dat er gemeten is (float omdat dit een kommagetal kan zijn)
 boolean eerstUit;
-//??? boolean eerstAan;
+unsigned long stelAantalMeetSecOp;
+unsigned long startKnop;
 
 //Instellen kleur lcd-scherm
 const int lcdRood = 100;
@@ -29,16 +28,16 @@ void tube_impulse(){
 
 //Begininstelling
 void setup(){
-  lcd.begin(16,2);                                                      //dimensie lcd-scherm 
+  lcd.begin(16,2);                                                      //dimensie lcd-scherm
   lcd.setRGB(lcdRood, lcdGroen, lcdBlauw);                              //instellen kleur lcd-scherm
   counts = 0;
   cpm = 0;
- //??? multiplier = MAX_PERIOD / LOG_PERIOD;                                 //calculating multiplier, depend on your log period
   Serial.begin(9600);                                                   // start serial monitor
   pinMode(2, INPUT);                                                    //digitale pin 2 als ingang van de schuifschakelaar
   pinMode(8, INPUT);                                                    //digitale pin 8 als ingang GM-buis (set pin INT0 input for capturing GM Tube events)
   digitalWrite(2, LOW);                                                 // (turn on internal pullup resistors, solder C-INT on the PCB WAS HIGH IPV LOW)
   digitalWrite(8, LOW);
+  stelAantalMeetSecOp = 12000;                                                  //meting moet 15 seconden duren
 }
 
 void loop(){
@@ -50,7 +49,8 @@ void loop(){
     if(currentMillis - previousMillis > LOG_PERIOD){
         previousMillis = currentMillis;
     }
-  }                                       //main cycle
+  }
+                              //main cycle
   else {
     if (eerstUit == true){
         lcd.clear();
@@ -61,8 +61,9 @@ void loop(){
     currentMillis = 0;
   }
   //Bereken het aantal cpm
-  aantMinMeten = currentMillis/60000;
-  cpm = counts/aantMinMeten;
+  //aantMinMeten = currentMillis/60000;
+  //cpm = counts/aantMinMeten;
+  cpm = (counts/currentMillis)*60000;
   //Projectie op het lcd-scherm
   lcd.setCursor(0, 1);
   lcd.print(cpm);
